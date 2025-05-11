@@ -1,10 +1,10 @@
 import math
 
 
-class MathHelper:
+class DistanceHelper:
 
     @staticmethod
-    def length(x1, y1, x2, y2):
+    def euclidean(x1, y1, x2, y2):
         """
         This function calculates the Euclidean distance between two points in a 2D plane.
 

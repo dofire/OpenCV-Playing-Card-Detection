@@ -1,6 +1,6 @@
 import cv2
 
-from utils.NameImg import NameImg
+from src.utils.NameImg import NameImg
 
 
 class Loader:
@@ -18,14 +18,18 @@ class Loader:
         i = 0
 
         for rank_name in ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']:
-            train_ranks.append(NameImg())
-            train_ranks[i].name = rank_name
-            filename = rank_name + '.jpg'
-            train_ranks[i].img = cv2.imread(dirpath + filename, cv2.IMREAD_GRAYSCALE)
+            filepath = dirpath + rank_name + '.jpg'
+
+            name_img = NameImg(
+                name=rank_name, 
+                img=cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
+            )
+            train_ranks.append(name_img)
 
             i = i + 1
 
         return train_ranks
+    
 
     @staticmethod
     def load_suits(dirpath):
@@ -40,10 +44,13 @@ class Loader:
         i = 0
 
         for suit_name in ['Spades', 'Diamonds', 'Clubs', 'Hearts']:
-            train_suits.append(NameImg())
-            train_suits[i].name = suit_name
-            filename = suit_name + '.jpg'
-            train_suits[i].img = cv2.imread(dirpath + filename, cv2.IMREAD_GRAYSCALE)
+            filepath = dirpath + suit_name + '.jpg'
+
+            name_img = NameImg(
+                name=suit_name, 
+                img=cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
+            )
+            train_suits.append(name_img)
             i = i + 1
 
         return train_suits
