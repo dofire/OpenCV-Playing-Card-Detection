@@ -3,49 +3,54 @@ import time
 import cv2
 import numpy as np
 
-from processing import process
-from utils import display
-from utils.Loader import Loader
+from src import process
+from src.utils import display
+from src.utils.Loader import Loader
 
-frameWidth = 640
-frameHeight = 480
 
+# show debug windows for each step
+# set to False if you want to run the program with the result windows only
 debug = True
 
+## use this if you want to use your real camera
 # url = 'https://192.168.1.173:8080'
-
-# change to 1 if using USB webcam
-cap = cv2.VideoCapture("test/2cards.mp4")
 # cap = cv2.VideoCapture(url + "/video")
+
+cap = cv2.VideoCapture("test/2cards.mp4")
+
 frame_rate = 30
 
-cap.set(3, frameWidth)  # width is id number 3
-cap.set(4, frameHeight)  # height is id 4
-cap.set(10, 150)  # change brightness to 150
+ID_WIDTH = 3
+ID_HEIGHT = 4
+ID_BRIGHTNESS = 10
 
-flatten_card_set = []
+cap.set(ID_WIDTH, 640)
+cap.set(ID_HEIGHT, 480)
+cap.set(ID_BRIGHTNESS, 150)
 
-prev = 0
 
-train_ranks = Loader.load_ranks('imgs/ranks')
-train_suits = Loader.load_suits('imgs/suits')
+ranks = Loader.load_ranks('assets/imgs/ranks')
+suits = Loader.load_suits('assets/imgs/suits')
 
 black_img = np.zeros((300, 200))
 
+prev_time = 0
+flatten_card_set = []
+
 while True:
-    time_elapsed = time.time() - prev
+    time_elapsed = time.time() - prev_time
 
     success, img = cap.read()
 
     if time_elapsed > 1. / frame_rate:
-        prev = time.time()
+        prev_time = time.time()
 
-        imgResult = img.copy()
-        imgResult2 = img.copy()
+        img_result = img.copy()
+        img_result2 = img.copy()
 
         thresh = process.get_thresh(img)
-        four_corners_set = process.find_corners_set(thresh, imgResult, draw=True)
-        flatten_card_set = process.find_flatten_cards(imgResult2, four_corners_set)
+        four_corners_set = process.find_corners_set(thresh, img_result, draw=True)
+        flatten_card_set = process.find_flatten_cards(img_result2, four_corners_set)
         cropped_images = process.get_corner_snip(flatten_card_set)
 
         if debug:
@@ -55,7 +60,7 @@ while True:
             for flat in flatten_card_set:
                 cv2.imshow('flat', flat)
 
-        ranksuit_list: list = list()
+        rank_suit_list: list = list()
 
         if debug and len(cropped_images) <= 0:
             cv2.imshow("crop", black_img)
@@ -70,12 +75,12 @@ while True:
             drawable = img.copy()
             original_copy = original.copy()
 
-            ranksuit = process.split_rank_suit(drawable, original_copy, debug=debug)
+            rank_suit = process.split_rank_suit(drawable, original_copy, debug=debug)
 
-            ranksuit_list.append(ranksuit)
+            rank_suit_list.append(rank_suit)
 
         try:
-            for rank, suit in ranksuit_list:
+            for rank, suit in rank_suit_list:
                 rank = cv2.resize(rank, (70, 100), 0, 0)
                 suit = cv2.resize(suit, (70, 100), 0, 0)
                 if debug:
@@ -86,8 +91,8 @@ while True:
 
         rs = list[str]()
 
-        for _rank, _suit in ranksuit_list:
-            predict_rank, predict_suit = process.template_matching(_rank, _suit, train_ranks, train_suits)
+        for _rank, _suit in rank_suit_list:
+            predict_rank, predict_suit = process.template_matching(_rank, _suit, ranks, suits)
             prediction = f"{predict_rank} {predict_suit}"
             rs.append(prediction)
             print(prediction)
@@ -95,12 +100,12 @@ while True:
         process.show_text(
             predictions=rs,
             four_corners_set=four_corners_set,
-            img=imgResult
+            img=img_result
         )
 
         # show the overall image
         time.sleep(0.05)
-        cv2.imshow('Result', display.stack_images(0.55, [imgResult, thresh]))
+        cv2.imshow('Result', display.stack_images(0.55, [img_result, thresh]))
 
     wait = cv2.waitKey(1)
     if wait & 0xFF == ord('q'):

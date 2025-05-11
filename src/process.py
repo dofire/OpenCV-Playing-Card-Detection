@@ -2,9 +2,10 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-from processing.ColorHelper import ColorHelper
-from utils import constants
-from utils.MathHelper import MathHelper
+from src.ColorHelper import ColorHelper
+from src.utils.DistanceHelper import DistanceHelper
+from src.utils import constants
+
 
 
 def get_thresh(img):
@@ -81,8 +82,8 @@ def find_flatten_cards(img, set_of_corners, debug=False):
         bottom_right = corners[2][0]
         top_right = corners[3][0]
 
-        vertical_left = MathHelper.length(top_left[0], top_left[1], bottom_left[0], bottom_left[1])
-        horizontal_top = MathHelper.length(top_left[0], top_left[1], top_right[0], top_right[1])
+        vertical_left = DistanceHelper.euclidean(top_left[0], top_left[1], bottom_left[0], bottom_left[1])
+        horizontal_top = DistanceHelper.euclidean(top_left[0], top_left[1], top_right[0], top_right[1])
 
         # get the 4 corners of the card
         pts1 = np.float32([top_left, bottom_left, bottom_right, top_right])
